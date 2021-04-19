@@ -22,7 +22,7 @@ db = SQLAlchemy(app)
 roles_users = db.Table(
     'roles_users',
     db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
-    db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
+    db.Column('role_id', db.Integer(), db.ForeignKey('role.id')),
 )
 
 
@@ -37,8 +37,10 @@ class Role(db.Model, RoleMixin):
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(255), nullable=False)
-    last_name = db.Column(db.String(255))
+    username = db.Column(db.String(255), nullable=False)
+    router = db.Column(db.String(255))
+    privileges = db.Column(db.Integer())
+    IP = db.Column(db.String(255))
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     active = db.Column(db.Boolean())
@@ -46,9 +48,9 @@ class User(db.Model, UserMixin):
     roles = db.relationship('Role', secondary=roles_users,
                             backref=db.backref('users', lazy='dynamic'))
 
+
     def __str__(self):
         return self.email
-
 
 # Setup Flask-Security
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
@@ -80,60 +82,59 @@ class MyModelView(sqla.ModelView):
                 return redirect(url_for('security.login', next=request.url))
 
 
-    # can_edit = True
-    edit_modal = True
+    can_edit = True
+    edit_modal = False
     create_modal = True    
     can_export = True
     can_view_details = True
     details_modal = True
 
 class UserView(MyModelView):
-    column_editable_list = ['email', 'first_name', 'last_name']
+    column_editable_list = ['privileges','IP','router','email', 'username','password']
     column_searchable_list = column_editable_list
     column_exclude_list = ['password']
     #form_excluded_columns = column_exclude_list
     column_details_exclude_list = column_exclude_list
     column_filters = column_editable_list
-    form_overrides = {
-        'password': PasswordField
-    }
+    #form_overrides = {
+    #    'password': PasswordField
+    #}
 
 
 class CustomView(BaseView):
     @expose('/')
     def index(self):
         return self.render('admin/custom_index.html')
-    @app.route('/admin/custom/', methods=["GET", "POST"])
-    def routers():
-        b = request.form['signup']
-        if request.method == 'POST':
-            usuario = request.form['name']
-            password = request.form['pss']
-            prv = request.form['prv']
-            
-            print("usuario: ", usuario)
-            print("password: ", password)
-            print("privilegio: ", prv)
-
-        if(b == "Crear"):
-            crearU(usuario, password, prv)
-        elif(b == "Eliminar"):
-            eliminarU(usuario, password, prv)
-        elif(b == "Modificar"):
-            modificarU(usuario, password, prv)
-        else:
-            conectar(usuario, password, prv)
-
-        return render_template("admin/custom_index.html")
 # Flask views
 @app.route('/')
 def index():
     return render_template('index.html')
 
+@app.route('/admin/user/edit/?id=<id>', methods=["GET", "POST"])
+def routers():
+    if request.method == 'POST':
+        usuario = request.form['username']
+        password = request.form['password']
+        prv = request.form['privileges']
+        
+        print("usuario: ", usuario)
+        print("password: ", password)
+        print("privilegio: ", prv)
+    
+    if(b == "Crear"):
+        crearU(usuario, password, prv)
+    elif(b == "Eliminar"):
+        eliminarU(usuario, password, prv)
+    elif(b == "Modificar"):
+        modificarU(usuario, password, prv)
+    else:
+        conectar(usuario, password, prv)
+    
+    return render_template("/admin/user/")
 # Create admin
 admin = flask_admin.Admin(
     app,
-    'My Dashboard',
+    'Network Manager',
     base_template='my_master.html',
     template_mode='bootstrap4',
 )
@@ -168,38 +169,44 @@ def build_sample_db():
     with app.app_context():
         user_role = Role(name='user')
         super_user_role = Role(name='superuser')
-
+        
         db.session.add(user_role)
         db.session.add(super_user_role)
+
         db.session.commit()
 
+        usernames = [
+            'Harry', 'Amelia', 'Oliver', 'Jack', 'Isabella', 'Charlie', 'Sophie', 'Mia',
+            'Jacob', 'Thomas', 'Emily', 'Lily', 'Ava', 'Isla', 'Alfie', 'Olivia', 'Jessica',
+            'Riley', 'William', 'James', 'Geoffrey', 'Lisa', 'Benjamin', 'Stacey', 'Lucy'
+        ]
+        routers = ['R1', 'R2', 'R3', 'R4']
+        routers_ip= ['192.168.0.1','10.10.0.130','10.10.0.134']
+        privs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+        IPtempadmin=random.choice(routers_ip)
         test_user = user_datastore.create_user(
-            first_name='Admin',
+            username='Admin',
+            router='R1',
+            IP=IPtempadmin,
+            privileges=15,
             email='admin',
             password=encrypt_password('admin'),
             roles=[user_role, super_user_role]
         )
 
-        first_names = [
-            'Harry', 'Amelia', 'Oliver', 'Jack', 'Isabella', 'Charlie', 'Sophie', 'Mia',
-            'Jacob', 'Thomas', 'Emily', 'Lily', 'Ava', 'Isla', 'Alfie', 'Olivia', 'Jessica',
-            'Riley', 'William', 'James', 'Geoffrey', 'Lisa', 'Benjamin', 'Stacey', 'Lucy'
-        ]
-        last_names = [
-            'Brown', 'Smith', 'Patel', 'Jones', 'Williams', 'Johnson', 'Taylor', 'Thomas',
-            'Roberts', 'Khan', 'Lewis', 'Jackson', 'Clarke', 'James', 'Phillips', 'Wilson',
-            'Ali', 'Mason', 'Mitchell', 'Rose', 'Davis', 'Davies', 'Rodriguez', 'Cox', 'Alexander'
-        ]
-
-        for i in range(len(first_names)):
-            tmp_email = first_names[i].lower() + "." + last_names[i].lower() + "@example.com"
+        for i in range(len(usernames)):
+            IPtemp = random.choice(routers_ip)
+            tmp_email = usernames[i].lower() + "@" + IPtemp
             tmp_pass = ''.join(random.choice(string.ascii_lowercase + string.digits) for i in range(10))
             user_datastore.create_user(
-                first_name=first_names[i],
-                last_name=last_names[i],
+                username=usernames[i],
+                router=routers[1],
+                privileges=random.choice(privs),
+                IP=IPtemp,
                 email=tmp_email,
-                password=encrypt_password(tmp_pass),
-                roles=[user_role, ]
+                #password=encrypt_password(tmp_pass),
+                password=tmp_pass,
+                roles=[user_role,]
             )
         db.session.commit()
     return
