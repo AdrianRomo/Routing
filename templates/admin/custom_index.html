@@ -1,0 +1,103 @@
+{% extends 'admin/master.html' %}
+{% block body %}
+{{ super() }}
+
+{% if current_user.is_authenticated %}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <h1>
+    Practica 2 Administración de Redes
+    <small>Realizar una interconexión básica de dos redes mediante tres encaminadores y enrutamiento estático.</small>
+  </h1>
+  <ol class="breadcrumb">
+    <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+    <li class="active">Práctica 2</li>
+  </ol>
+</section>
+
+<section class="content">
+
+  <div class="row">
+    <!-- Left col -->
+    <Left>
+    <section class="container"> 
+      <form action="" method="post">
+        <div>
+          <label> Elija el dispositivo de red </label>
+          <select name="prv" id="prv" style="display: table-column; width:10%;">
+            <option value="R1">R1</option>
+            <option value="R2">R2</option>
+            <option value="R3">R3</option>
+          </select>
+          </div>
+          <label> Usuario </label> <input type="text" name="name" style="display: table-column; width:10%;" /><br><br>
+          <label> Password </label> <input type="password" name="pss" style="display: table-column; width:10%;" /><br><br>
+          <label for="prv">Privilegio </label>
+          <select name="prv" id="prv" style="display: table-column; width:10%;">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="13">13</option>
+            <option value="14">14</option>
+            <option value="15">15</option>
+          </select><br><br>
+          <input type="submit" id="send-signup" name="signup" value="Crear" />
+          <input type="submit" id="send-signup" name="signup" value="Eliminar" />
+          <input type="submit" id="send-signup" name="signup" value="Modificar" />
+          <input type="submit" id="send-signup" name="signup" value="Conectar" />
+      </form>
+    </section>
+  </left>
+    <!-- /.Left col -->
+
+  </div>
+  <!-- /.row (main row) -->
+
+</section>
+<!-- /.content -->
+{% else %}
+
+<center>
+  <section class="content" style="color: white">
+    <div class="col-sm-12">
+      <h1>Flask-Admin example</h1>
+      <p class="lead">
+        Authentication
+      </p>
+      <p>
+        This example shows how you can use Flask-Admin in an admin template, <br> here I used AdminLTE and <a href="https://pythonhosted.org/Flask-Security/index.html" target="_blank">Flask-Security</a> for authentication.
+      </p>
+      {% if not current_user.is_authenticated %}
+      <p>You can register as a regular user, or log in as a superuser with the following credentials: <br><br>
+
+        email: <b>admin</b> <br>
+        password: <b>admin</b> <br>
+        <br>
+        <p>
+          <a class="btn btn-primary" href="{{ url_for('security.login') }}">Login</a> <a class="btn btn-default" href="{{ url_for('security.register') }}">Register</a>
+        </p>
+        {% endif %}
+        <br>
+        <p>
+          <a class="btn btn-primary" href="/"><i class="glyphicon glyphicon-chevron-left"></i> Back</a>
+        </p>
+      </div>
+    </section>
+  </center>
+
+  <br><br><br><br><br><br><br><br><br>
+  <br><br><br><br><br><br><br><br><br><br>
+  {% endif %}
+
+  {% endblock body %}
