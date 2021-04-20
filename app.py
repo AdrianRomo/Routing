@@ -1,6 +1,7 @@
 #!venv/bin/python
 import os
 from flask import Flask, url_for, redirect, render_template, request, abort
+from flask_admin.model.base import BaseModelView, FilterGroup, ViewArgs
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import Security, SQLAlchemyUserDatastore, \
     UserMixin, RoleMixin, login_required, current_user
@@ -8,15 +9,16 @@ from flask_security.utils import encrypt_password
 import flask_admin
 from flask_admin.contrib import sqla
 from flask_admin import helpers as admin_helpers
-from flask_admin import BaseView, expose
+from flask_admin import BaseView,expose
 from wtforms import PasswordField
 from connectR import crearU, modificarU, conectar, eliminarU, hacerPing
+from flask_admin.helpers import (get_form_data, validate_form_on_submit,
+                                 get_redirect_target, flash_errors)
 
 # Create Flask application
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
 db = SQLAlchemy(app)
-
 
 # Define models
 roles_users = db.Table(
@@ -83,7 +85,7 @@ class MyModelView(sqla.ModelView):
 
 
     can_edit = True
-    edit_modal = False
+    edit_modal = True
     create_modal = True    
     can_export = True
     can_view_details = True
@@ -110,27 +112,33 @@ class CustomView(BaseView):
 def index():
     return render_template('index.html')
 
-@app.route('/admin/user/edit/?id=<id>', methods=["GET", "POST"])
+# Routers Functions 
+ 
+@app.route('/admin/user/edit/', methods=["POST"])
 def routers():
     if request.method == 'POST':
         usuario = request.form['username']
         password = request.form['password']
         prv = request.form['privileges']
-        
-        print("usuario: ", usuario)
-        print("password: ", password)
-        print("privilegio: ", prv)
+    return redirect(return_url)
     
-    if(b == "Crear"):
-        crearU(usuario, password, prv)
-    elif(b == "Eliminar"):
-        eliminarU(usuario, password, prv)
-    elif(b == "Modificar"):
-        modificarU(usuario, password, prv)
-    else:
-        conectar(usuario, password, prv)
-    
-    return render_template("/admin/user/")
+"""
+@app.route('/admin/user/new/<id>', methods=["POST"])
+def routers():
+    if request.method == 'POST':
+        usuario = request.form['username']
+        password = request.form['password']
+        #crearU(usuario, password, prv)
+    return redirect('/admin/user/edit/')
+
+@app.route('/admin/user/delete/<id>', methods=["POST"])
+def routers():
+    if request.method == 'POST':
+        usuario = request.form['username']
+        password = request.form['password']
+        #eliminarU(usuario, password, prv)
+    return redirect('/admin/user/edit/')
+"""
 # Create admin
 admin = flask_admin.Admin(
     app,
