@@ -1,4 +1,3 @@
-#!venv/bin/python
 import os
 from pyvistest import pyvistest
 from flask import Flask, url_for, redirect, render_template, request, abort
