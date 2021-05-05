@@ -22,41 +22,7 @@
     <!-- Left col -->
     <center>
     <section class="container"> 
-      <form action="" method="post">
-        <div>
-          <label> Elija el dispositivo de red </label>
-          <select name="prv" id="prv" style="display: table-column; width:10%;">
-            <option value="R1">R1</option>
-            <option value="R2">R2</option>
-            <option value="R3">R3</option>
-          </select><br>
-          </div>
-          <label> Usuario </label> <input type="text" name="name" style="display: table-column; width:10%;" /><br><br>
-          <label> Password </label> <input type="password" name="pss" style="display: table-column; width:10%;" /><br><br>
-          <label for="prv">Privilegio </label>
-          <select name="prv" id="prv" style="display: table-column; width:10%;">
-            <option value="0">0</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-            <option value="9">9</option>
-            <option value="10">10</option>
-            <option value="11">11</option>
-            <option value="12">12</option>
-            <option value="13">13</option>
-            <option value="14">14</option>
-            <option value="15">15</option>
-          </select><br><br>
-          <input type="submit" id="send-signup" name="signup" value="Crear" />
-          <input type="submit" id="send-signup" name="signup" value="Eliminar" />
-          <input type="submit" id="send-signup" name="signup" value="Modificar" />
-          <input type="submit" id="send-signup" name="signup" value="Conectar" />
-      </form>
+      {% include "admin/network.html" %}
     </section>
   </center>
     <!-- /.Left col -->

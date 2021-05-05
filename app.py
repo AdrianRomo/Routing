@@ -1,5 +1,6 @@
 #!venv/bin/python
 import os
+from pyvistest import pyvistest
 from flask import Flask, url_for, redirect, render_template, request, abort
 from flask_admin.model.base import BaseModelView, FilterGroup, ViewArgs
 from flask_sqlalchemy import SQLAlchemy
@@ -14,7 +15,6 @@ from wtforms import PasswordField
 from connectR import crearU, modificarU, conectar, eliminarU, hacerPing
 from flask_admin.helpers import (get_form_data, validate_form_on_submit,
                                  get_redirect_target, flash_errors)
-
 # Create Flask application
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
@@ -25,8 +25,9 @@ roles_users = db.Table(
     'roles_users',
     db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
     db.Column('role_id', db.Integer(), db.ForeignKey('role.id')),
+    db.Column('router_id', db.Integer(), db.ForeignKey('router.id')),
 )
-
+ips=[19]
 
 class Role(db.Model, RoleMixin):
     id = db.Column(db.Integer(), primary_key=True)
@@ -101,44 +102,39 @@ class UserView(MyModelView):
     #form_overrides = {
     #    'password': PasswordField
     #}
+    def on_model_change(self, form, model, is_created):
+        if is_created:
+            try:
+                crearU(model.username,model.password,model.privileges)
+            except Exception as e:
+                print(e)
+                pass
+        else:
+            try:
+                print("Soy prueba wuuu")
+                modificarU(model.username,model.password,model.privileges)
+            except Exception as e:
+                #crearU(model.username,model.password,model.privileges)
+                print(e)
+                pass
 
-
+    def on_model_delete(self, model):
+        try:
+            eliminarU(model.username,model.password,model.privileges)
+        except Exception as e:
+            print(e)
+            pass
+        
 class CustomView(BaseView):
     @expose('/')
     def index(self):
+        pyvistest()
         return self.render('admin/custom_index.html')
 # Flask views
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Routers Functions 
- 
-@app.route('/admin/user/edit/', methods=["POST"])
-def routers():
-    if request.method == 'POST':
-        usuario = request.form['username']
-        password = request.form['password']
-        prv = request.form['privileges']
-    return redirect(return_url)
-    
-"""
-@app.route('/admin/user/new/<id>', methods=["POST"])
-def routers():
-    if request.method == 'POST':
-        usuario = request.form['username']
-        password = request.form['password']
-        #crearU(usuario, password, prv)
-    return redirect('/admin/user/edit/')
-
-@app.route('/admin/user/delete/<id>', methods=["POST"])
-def routers():
-    if request.method == 'POST':
-        usuario = request.form['username']
-        password = request.form['password']
-        #eliminarU(usuario, password, prv)
-    return redirect('/admin/user/edit/')
-"""
 # Create admin
 admin = flask_admin.Admin(
     app,
