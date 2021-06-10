@@ -1,5 +1,5 @@
-#!venv/bin/python
 import os
+from pyvistest import pyvistest
 from flask import Flask, url_for, redirect, render_template, request, abort
 from flask_admin.model.base import BaseModelView, FilterGroup, ViewArgs
 from flask_sqlalchemy import SQLAlchemy
@@ -14,7 +14,6 @@ from wtforms import PasswordField
 from connectR import crearU, modificarU, conectar, eliminarU, hacerPing
 from flask_admin.helpers import (get_form_data, validate_form_on_submit,
                                  get_redirect_target, flash_errors)
-
 # Create Flask application
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
@@ -27,20 +26,19 @@ roles_users = db.Table(
     db.Column('role_id', db.Integer(), db.ForeignKey('role.id')),
 )
 
-
 class Role(db.Model, RoleMixin):
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
+    ip = db.Column(db.String(255))
+    routing_type = db.Column(db.String(255))
+    interface_number = db.Column(db.Integer())
 
     def __str__(self):
         return self.name
-
-
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), nullable=False)
-    router = db.Column(db.String(255))
     privileges = db.Column(db.Integer())
     IP = db.Column(db.String(255))
     email = db.Column(db.String(255), unique=True, nullable=False)
@@ -61,7 +59,9 @@ security = Security(app, user_datastore)
 
 # Create customized model view class
 class MyModelView(sqla.ModelView):
-
+    column_editable_list = ['name','description','ip', 'routing_type','interface_number']
+    column_searchable_list = column_editable_list
+    column_exclude_list = ['password']
     def is_accessible(self):
         if not current_user.is_active or not current_user.is_authenticated:
             return False
@@ -92,7 +92,7 @@ class MyModelView(sqla.ModelView):
     details_modal = True
 
 class UserView(MyModelView):
-    column_editable_list = ['privileges','IP','router','email', 'username','password']
+    column_editable_list = ['privileges','IP','email', 'username','password']
     column_searchable_list = column_editable_list
     column_exclude_list = ['password']
     #form_excluded_columns = column_exclude_list
@@ -101,44 +101,38 @@ class UserView(MyModelView):
     #form_overrides = {
     #    'password': PasswordField
     #}
+    def on_model_change(self, form, model, is_created):
+        if is_created:
+            try:
+                crearU(model.username,model.password,model.privileges)
+            except Exception as e:
+                print(e)
+                pass
+        else:
+            try:
+                modificarU(model.username,model.password,model.privileges)
+            except Exception as e:
+                #crearU(model.username,model.password,model.privileges)
+                print(e)
+                pass
 
-
+    def on_model_delete(self, model):
+        try:
+            eliminarU(model.username,model.password,model.privileges)
+        except Exception as e:
+            print(e)
+            pass
+        
 class CustomView(BaseView):
     @expose('/')
     def index(self):
+        pyvistest()
         return self.render('admin/custom_index.html')
 # Flask views
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Routers Functions 
- 
-@app.route('/admin/user/edit/', methods=["POST"])
-def routers():
-    if request.method == 'POST':
-        usuario = request.form['username']
-        password = request.form['password']
-        prv = request.form['privileges']
-    return redirect(return_url)
-    
-"""
-@app.route('/admin/user/new/<id>', methods=["POST"])
-def routers():
-    if request.method == 'POST':
-        usuario = request.form['username']
-        password = request.form['password']
-        #crearU(usuario, password, prv)
-    return redirect('/admin/user/edit/')
-
-@app.route('/admin/user/delete/<id>', methods=["POST"])
-def routers():
-    if request.method == 'POST':
-        usuario = request.form['username']
-        password = request.form['password']
-        #eliminarU(usuario, password, prv)
-    return redirect('/admin/user/edit/')
-"""
 # Create admin
 admin = flask_admin.Admin(
     app,
@@ -188,13 +182,11 @@ def build_sample_db():
             'Jacob', 'Thomas', 'Emily', 'Lily', 'Ava', 'Isla', 'Alfie', 'Olivia', 'Jessica',
             'Riley', 'William', 'James', 'Geoffrey', 'Lisa', 'Benjamin', 'Stacey', 'Lucy'
         ]
-        routers = ['R1', 'R2', 'R3', 'R4']
         routers_ip= ['192.168.0.1','10.10.0.130','10.10.0.134']
         privs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
         IPtempadmin=random.choice(routers_ip)
         test_user = user_datastore.create_user(
             username='Admin',
-            router='R1',
             IP=IPtempadmin,
             privileges=15,
             email='admin',
@@ -208,7 +200,6 @@ def build_sample_db():
             tmp_pass = ''.join(random.choice(string.ascii_lowercase + string.digits) for i in range(10))
             user_datastore.create_user(
                 username=usernames[i],
-                router=routers[1],
                 privileges=random.choice(privs),
                 IP=IPtemp,
                 email=tmp_email,

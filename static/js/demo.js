@@ -35,16 +35,18 @@
   });
 
   //Create the tab button
+  /*
   var tab_button = $("<li />", {"class": ""})
       .html("<a href='#control-sidebar-options-tab' data-toggle='tab'>"
       + "<i class='fa fa-desktop'></i>"
       + "</a>");
-
+*/
   //Add the tab button to the right sidebar tabs
+  /*
   $("[href='#control-sidebar-settings-tab']")
       .parent()
       .before(tab_button);
-
+*/
   //Create the menu
   var demo_settings = $("<div />");
 
@@ -253,22 +255,25 @@
   ];
 
   //Create the new tab
+  /*
   var skins_pane = $("<div />", {
     "id": "control-sidebar-skins-tab",
     "class": "tab-pane active"
   });
-
+*/
   //Create the tab button
+  /*
   var skins_button = $("<li />", {"class": "active"})
       .html("<a href='#control-sidebar-skins-tab' data-toggle='tab'>"
       + "<i class='ion-paintbucket'></i>"
       + "</a>");
-
+*/
   //Add the tab button to the right sidebar tabs
+  /*
   $("[href='#control-sidebar-options-tab']")
       .parent()
       .before(skins_button);
-
+*/
   //Create the menu
   var skins_settings = $("<div />");
 
@@ -377,8 +382,8 @@
   skins_settings.append("<h4 class='control-sidebar-heading'>Skins</h4>");
   skins_settings.append(skins_list);
 
-  skins_pane.append(skins_settings);
-  $("#control-sidebar-options-tab").after(skins_pane);
+  //.append(skins_settings);
+  //$("#control-sidebar-options-tab").after(skins_pane);
 
   setup();
 
