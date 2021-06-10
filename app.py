@@ -24,23 +24,21 @@ roles_users = db.Table(
     'roles_users',
     db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
     db.Column('role_id', db.Integer(), db.ForeignKey('role.id')),
-    db.Column('router_id', db.Integer(), db.ForeignKey('router.id')),
 )
-ips=[19]
 
 class Role(db.Model, RoleMixin):
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
+    ip = db.Column(db.String(255))
+    routing_type = db.Column(db.String(255))
+    interface_number = db.Column(db.Integer())
 
     def __str__(self):
         return self.name
-
-
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), nullable=False)
-    router = db.Column(db.String(255))
     privileges = db.Column(db.Integer())
     IP = db.Column(db.String(255))
     email = db.Column(db.String(255), unique=True, nullable=False)
@@ -61,7 +59,9 @@ security = Security(app, user_datastore)
 
 # Create customized model view class
 class MyModelView(sqla.ModelView):
-
+    column_editable_list = ['name','description','ip', 'routing_type','interface_number']
+    column_searchable_list = column_editable_list
+    column_exclude_list = ['password']
     def is_accessible(self):
         if not current_user.is_active or not current_user.is_authenticated:
             return False
@@ -92,7 +92,7 @@ class MyModelView(sqla.ModelView):
     details_modal = True
 
 class UserView(MyModelView):
-    column_editable_list = ['privileges','IP','router','email', 'username','password']
+    column_editable_list = ['privileges','IP','email', 'username','password']
     column_searchable_list = column_editable_list
     column_exclude_list = ['password']
     #form_excluded_columns = column_exclude_list
@@ -110,7 +110,6 @@ class UserView(MyModelView):
                 pass
         else:
             try:
-                print("Soy prueba wuuu")
                 modificarU(model.username,model.password,model.privileges)
             except Exception as e:
                 #crearU(model.username,model.password,model.privileges)
@@ -183,13 +182,11 @@ def build_sample_db():
             'Jacob', 'Thomas', 'Emily', 'Lily', 'Ava', 'Isla', 'Alfie', 'Olivia', 'Jessica',
             'Riley', 'William', 'James', 'Geoffrey', 'Lisa', 'Benjamin', 'Stacey', 'Lucy'
         ]
-        routers = ['R1', 'R2', 'R3', 'R4']
         routers_ip= ['192.168.0.1','10.10.0.130','10.10.0.134']
         privs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
         IPtempadmin=random.choice(routers_ip)
         test_user = user_datastore.create_user(
             username='Admin',
-            router='R1',
             IP=IPtempadmin,
             privileges=15,
             email='admin',
@@ -203,7 +200,6 @@ def build_sample_db():
             tmp_pass = ''.join(random.choice(string.ascii_lowercase + string.digits) for i in range(10))
             user_datastore.create_user(
                 username=usernames[i],
-                router=routers[1],
                 privileges=random.choice(privs),
                 IP=IPtemp,
                 email=tmp_email,

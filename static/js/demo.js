@@ -382,8 +382,8 @@
   skins_settings.append("<h4 class='control-sidebar-heading'>Skins</h4>");
   skins_settings.append(skins_list);
 
-  skins_pane.append(skins_settings);
-  $("#control-sidebar-options-tab").after(skins_pane);
+  //.append(skins_settings);
+  //$("#control-sidebar-options-tab").after(skins_pane);
 
   setup();
 
