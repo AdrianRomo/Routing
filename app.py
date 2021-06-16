@@ -11,12 +11,17 @@ from flask_admin.contrib import sqla
 from flask_admin import helpers as admin_helpers
 from flask_admin import BaseView,expose
 from wtforms import PasswordField
-from connectR import crearU, modificarU, conectar, eliminarU, hacerPing
+from connectR import crearU, modificarU, conectar, eliminarU, hacerPing, pyvistest
 from flask_admin.helpers import (get_form_data, validate_form_on_submit,
                                  get_redirect_target, flash_errors)
+from flask_mail import Message, Mail
+
 # Create Flask application
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
+mail = Mail()
+mail = Mail(app)
+
 db = SQLAlchemy(app)
 
 # Define models
@@ -105,24 +110,43 @@ class UserView(MyModelView):
         if is_created:
             try:
                 crearU(model.username,model.password,model.privileges)
+                print("ENVIANDO")
+                msg = Message("User Created",
+                  sender="adriannavawd@gmail.com",
+                  recipients=["adrianava97@hotmail.com"])
+                msg.body = "Usuario:" + str(model.username) + "\nPrivilegios:" + str(model.privileges) + "\nMail:" + str(model.email) + "\nIP:" + str(model.IP)
+                msg.html = "<b><p> Usuario:" + str(model.username) +"</b></p>"+ "<b><p> Privilegios:" + str(model.privileges) +"</b></p>"+ "<b><p>Mail:" + str(model.email) +"</b></p>"+ "<b><p>IP:" + str(model.IP) +"</b></p>"
+                mail.send(msg)
             except Exception as e:
                 print(e)
                 pass
         else:
             try:
+                self.sendmail(model, "Usuario Modificado")
                 modificarU(model.username,model.password,model.privileges)
             except Exception as e:
+                #self.sendmail(model, "Usuario Creado")
                 #crearU(model.username,model.password,model.privileges)
-                print(e)
+                print("Error" + e)
                 pass
 
     def on_model_delete(self, model):
         try:
+            self.sendmail(model, "Usuario Eliminado")
             eliminarU(model.username,model.password,model.privileges)
         except Exception as e:
             print(e)
             pass
-        
+
+    def sendmail(self, model, atattchment):
+        print("ENVIANDO")
+        msg = Message(atattchment,
+            sender="adriannavawd@gmail.com",
+            recipients=["adrianava97@hotmail.com"])
+        msg.body = "Usuario:" + str(model.username) + "\nPrivilegios:" + str(model.privileges) + "\nMail:" + str(model.email) + "\nIP:" + str(model.IP)
+        msg.html = "<b><p> Usuario:" + str(model.username) +"</b></p>"+ "<b><p> Privilegios:" + str(model.privileges) +"</b></p>"+ "<b><p>Mail:" + str(model.email) +"</b></p>"+ "<b><p>IP:" + str(model.IP) +"</b></p>"
+        mail.send(msg)   
+
 class CustomView(BaseView):
     @expose('/')
     def index(self):
