@@ -302,43 +302,26 @@ def ospfProcess(routerData):
     #print('\n\nInfo recuperada: ', routerData.sendData(), "\n\n")
 
 def rip(con, ips_id):
-    #output = con.send_command('show ip interface brief | i up')
-    #ip = output.split()
 
     print('Llegó al rip')
-    #ip_id = []
-    #i = 1
-    #while i < len(ip):
-    #    ip_id.append(findNetworkID(ip[i],con))
-    #    i = i + 6
 
-    cmd= ['conf t', 'router rip', 'ver 2']
-
-    #con.write_channel('configure terminal')
-    #time.sleep(1)
-    #con.write_channel('router rip\n')
-    #time.sleep(1)
-    #con.write_channel('version 2\n')
-    #time.sleep(1)
+    cmd= ['conf t', 'snmp-server view V3Read iso included', 'snmp-server view V3Write iso included', 
+        'snmp-server group redes3 v3 auth read V3Read write V3Write', 
+        'snmp-server user admin redes3 v3 auth sha shapass1234 priv des56 despass1234', 'router rip', 'ver 2']
 
     for i in ips_id:
-        #print('RIP Network '+i)
         cmd.append('network ' + i)
-        #con.write_channel('network '+i+'\n')
-        time.sleep(1)
     
     cmd.append('exit')
     cmd.append('exit')
 
     configTerminal= []
     for i in range(len(cmd)):
-        #print(f'Comando a anotar del router {self.hostname}: ', self.cmd[i])
         configTerminal.append(con.send_command_timing(cmd[i]))
 
     print('Primer comando output: ', configTerminal)
     time.sleep(1)
-    #print('Segundo comando exit: ', con.write_channel('exit\n'))
-    #time.sleep(1)
+    
 
 def configure_router(router,hostname,con):
     #print(f'Intenta ejecutar show cdp entry {router} | i IP address')
