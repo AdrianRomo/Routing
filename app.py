@@ -36,9 +36,10 @@ class Role(db.Model, RoleMixin):
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
     ip = db.Column(db.String(255))
-    routing_type = db.Column(db.String(255))
+    routing_protocol = db.Column(db.String(255))
     interface_number = db.Column(db.Integer())
-
+    neighbors =  db.Column(db.String(255))
+    
     def __str__(self):
         return self.name
 class User(db.Model, UserMixin):
@@ -64,7 +65,7 @@ security = Security(app, user_datastore)
 
 # Create customized model view class
 class MyModelView(sqla.ModelView):
-    column_editable_list = ['name','description','ip', 'routing_type','interface_number']
+    column_editable_list = ['name', 'description', 'ip', 'routing_protocol','interface_number', 'neighbors']
     column_searchable_list = column_editable_list
     column_exclude_list = ['password']
     def is_accessible(self):
@@ -166,7 +167,7 @@ admin = flask_admin.Admin(
 )
 
 # Add model views
-admin.add_view(MyModelView(Role, db.session, menu_icon_type='fa', menu_icon_value='fa-server', name="Roles"))
+admin.add_view(MyModelView(Role, db.session, menu_icon_type='fa', menu_icon_value='fa-server', name="Routers"))
 admin.add_view(UserView(User, db.session, menu_icon_type='fa', menu_icon_value='fa-users', name="Users"))
 admin.add_view(CustomView(name="Custom view", endpoint='custom', menu_icon_type='fa', menu_icon_value='fa-connectdevelop',))
 
