@@ -44,14 +44,9 @@ class Role(db.Model, RoleMixin):
     routing_protocol = db.Column(db.String(255))
     interface_number = db.Column(db.Integer())
     neighbors =  db.Column(db.String(255))
-<<<<<<< HEAD
     active_time = db.column(db.String(45))
     location = db.column(db.String(45))
     contact = db.column(db.String(45))
-    
-=======
-
->>>>>>> 552c36dc03f5905715bfadd9095dc79c5bc3fbfc
     def __str__(self):
         return self.name
 class User(db.Model, UserMixin):
@@ -124,12 +119,8 @@ class UserView(MyModelView):
         if is_created:
             print('Entra aqui')
             try:
-<<<<<<< HEAD
-                print('Creará')
-=======
                 created_user = my_signals.signal('created_user')
                 created_user.send(self)
->>>>>>> 552c36dc03f5905715bfadd9095dc79c5bc3fbfc
                 crearU(model.username,model.password,model.privileges)
                 self.sendmail(model, "Usuario Creado")
     
@@ -150,13 +141,10 @@ class UserView(MyModelView):
 
     def on_model_delete(self, model):
         try:
-<<<<<<< HEAD
-            #self.sendmail(model, "Usuario Eliminado")
-=======
+            self.sendmail(model, "Usuario Eliminado")
             deleted_user = my_signals.signal('deleted_user')
             deleted_user.send(self)
             self.sendmail(model, "Usuario Eliminado")
->>>>>>> 552c36dc03f5905715bfadd9095dc79c5bc3fbfc
             eliminarU(model.username,model.password,model.privileges)
         except Exception as e:
             print(e)
@@ -177,15 +165,12 @@ class UserView(MyModelView):
 class CustomView(BaseView):
     @expose('/')
     def index(self):
-<<<<<<< HEAD
         dictionary= pyvistest()
 
         
 
-=======
         pyvis = my_signals.signal('topology')
         router =pyvistest()
->>>>>>> 552c36dc03f5905715bfadd9095dc79c5bc3fbfc
         return self.render('admin/custom_index.html')
 # Flask views
 @app.route('/')
@@ -203,11 +188,7 @@ admin = flask_admin.Admin(
 # Add model views
 admin.add_view(MyModelView(Role, db.session, menu_icon_type='fa', menu_icon_value='fa-server', name="Routers"))
 admin.add_view(UserView(User, db.session, menu_icon_type='fa', menu_icon_value='fa-users', name="Users"))
-<<<<<<< HEAD
-admin.add_view(CustomView(name="Topología", endpoint='custom', menu_icon_type='fa', menu_icon_value='fa-connectdevelop',))
-=======
 admin.add_view(CustomView(name="Topology", endpoint='custom', menu_icon_type='fa', menu_icon_value='fa-connectdevelop',))
->>>>>>> 552c36dc03f5905715bfadd9095dc79c5bc3fbfc
 
 # define a context processor for merging flask-admin's template context into the
 # flask-security views.
