@@ -1,70 +1,100 @@
+#!/usr/bin/env python3
 from netmiko import ConnectHandler
 from pythonping import ping
 import os
 from pyvis.network import Network
 import networkx as nx
 import matplotlib.pyplot as plt
+from sqlalchemy.sql.expression import null
 from module_scan import scan_by_interface
 from pyvis.network import Network as net
 import json
+import time
 
 cisco = {
-    "device_type": "cisco_ios",
-    "ip": "",
-    "username": "admin",
-    "password": "admin01",
-    "secret": "12345678",
+	"device_type": "cisco_xe",
+	"ip": "",
+	"username": "admin",
+	"password": "admin",
+	"secret": "1234",
 }
 
 routers_ip= ['192.168.0.1','10.10.0.130','10.10.0.134']
 params= ["username "," privilege "," password ","no username "]
 
 def hacerPing():
-    for router in routers_ip:
-        response= os.system('ping -c 1 ' + router)
-        if response == 0:
-            print(router, 'is up')
-        else:
-            print(router, 'is down')
+	for router in routers_ip:
+		response= os.system('ping -c 1 ' + router)
+		if response == 0:
+			print(router, 'is up')
+		else:
+			print(router, 'is down')
+
+def get_routers_ip():
+    routers_ip= {}
+    f= open('routers.json',)
+    data = json.load(f)
+    data.replace('\n','')
+    data.replace('\\','')
+    json_routers=json.dumps(data,sort_keys=True,indent=4)
+    newDict= json.loads(json_routers)
+    newData= json.loads(newDict)
+    #print('Data: ', newData)
+    for key,values in newData.items():
+        print('Valor? ', key)
+        if 'Ip' in values:
+            print(f'Ip anadida: ', newData[key]['Ip'])
+            routers_ip[key]= newData[key]['Ip']
+	
+    return routers_ip
 
 def crearU(user, passw, priv):
-    print("Conectando con: ", user, "con password", passw, "Y privilegios", priv)
-    for router in routers_ip:
-        cisco["ip"] = router
+	
+    routers= get_routers_ip()
+
+    for key,values in routers.items():
+        hostname= key
+        cisco["ip"] = values
 
         net_connect = ConnectHandler(**cisco)
-        # Sirve para entrar en el router en el modo EXEC privilegiado (acceso a todos los comandos del router)
+        #Sirve para entrar en el router en el modo EXEC privilegiado (acceso a todos los comandos del router)
         net_connect.enable()
-        # Se ejecuta el comando de creación de usuario
-        print(net_connect.send_config_set(params[0] + user + params[1] + priv + params[2] + passw))
-        print("Usuario creado en router " + router)
+        #Se ejecuta el comando de creación de usuario
+        print(net_connect.send_config_set(params[0] + user + params[1] + str(priv) + params[2] + passw))
+        print("Usuario creado en router " + hostname)
+    
     net_connect.disconnect()
 
 def modificarU(user, passw, priv):
-    print("Conectando con: ", user, "con password", passw, "Y privilegios", priv)
+	
+    routers= get_routers_ip()
 
-    for router in routers_ip:
-        cisco["ip"] = router
-    
+    for key,values in routers.items():
+        hostname= key
+        cisco["ip"] = values
+
         net_connect = ConnectHandler(**cisco)
-        # Sirve para entrar en el router en el modo EXEC privilegiado (acceso a todos los comandos del router)
+        #Sirve para entrar en el router en el modo EXEC privilegiado (acceso a todos los comandos del router)
         net_connect.enable()
-        # Se ejecuta el comando modificar al usuario
+        #Se ejecuta el comando modificar al usuario
         print(net_connect.send_config_set(params[0] + user + params[1] + priv + params[2] + passw))
-        print("Usuario modificado")
+        print("Usuario modificado en router ", hostname)
         net_connect.disconnect()
 
 def eliminarU(user, passw, priv):
-    print("Conectando con: ", user, "con password", passw, "Y privilegios", priv)
-    for router in routers_ip:
-        cisco["ip"] = router
+	
+    routers= get_routers_ip()
+
+    for key,values in routers.items():
+        hostname= key
+        cisco["ip"] = values
 
         net_connect = ConnectHandler(**cisco)
-        # Sirve para entrar en el router en el modo EXEC privilegiado (acceso a todos los comandos del router)
+        #Sirve para entrar en el router en el modo EXEC privilegiado (acceso a todos los comandos del router)
         net_connect.enable()
-        # Se ejecuta el comando de creación de usuario
-        print(net_connect.send_config_set(params[3] + user + params[1] + priv + params[2] + passw))
-        print("Usuario eliminado")
+        #Se ejecuta el comando de creación de usuario
+        print(net_connect.send_config_set(params[3] + user))
+        print("Usuario eliminado en router ", hostname)
         net_connect.disconnect()
 
 def conectar(user, passw):
@@ -127,5 +157,6 @@ def pyvistest():
                             print(f'Se crea conexion computadora entre {key} y {key_3}')
         
         g.show('templates/admin/network.html')
+        return newDict
     except Exception as e:
         print('Error ', e)

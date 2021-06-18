@@ -12,15 +12,12 @@
 <style type="text/css">
 
         #mynetwork {
-            width: 500px;
-            height: 500px;
-            background-color: #FFFFFF00;
-            border: 0px;
-            margin-left: auto;
-            margin-right: auto;
+            width: 800px;
+            height: 800px;
+            background-color: #ffffff;
+            border: 1px solid lightgray;
             position: relative;
-            float: none;
-
+            float: left;
         }
 
         
@@ -53,8 +50,8 @@
         
 
         // parsing and collecting nodes and edges from the python
-        nodes = new vis.DataSet([{"id": 0, "label": 0, "shape": "dot", "size": 10}, {"group": 1, "id": 1, "label": 1, "shape": "dot", "size": 10, "title": "Number 1"}, {"id": 9, "label": 9, "shape": "dot", "size": 10}, {"id": 2, "label": 2, "shape": "dot", "size": 10}, {"group": 10, "id": 3, "label": 3, "shape": "dot", "size": 10, "title": "I belong to a different group!"}, {"id": 4, "label": 4, "shape": "dot", "size": 10}, {"id": 5, "label": 5, "shape": "dot", "size": 10}, {"id": 6, "label": 6, "shape": "dot", "size": 10}, {"id": 7, "label": 7, "shape": "dot", "size": 10}, {"id": 8, "label": 8, "shape": "dot", "size": 10}, {"group": 2, "id": 20, "image": "/static/img/computer.png", "label": 20, "shape": "image", "size": 20, "title": "couple"}, {"group": 2, "id": 21, "image": "/static/img/computer.png", "label": 21, "shape": "image", "size": 15, "title": "couple"}, {"group": 3, "id": 25, "image": "/static/img/router.png", "label": "lonely", "shape": "image", "size": 25, "title": "lonely node"}]);
-        edges = new vis.DataSet([{"from": 0, "to": 1, "weight": 1}, {"from": 0, "to": 9, "weight": 1}, {"from": 1, "to": 2, "weight": 1}, {"from": 2, "to": 3, "weight": 1}, {"from": 3, "to": 4, "weight": 1}, {"from": 4, "to": 5, "weight": 1}, {"from": 5, "to": 6, "weight": 1}, {"from": 6, "to": 7, "weight": 1}, {"from": 7, "to": 8, "weight": 1}, {"from": 8, "to": 9, "weight": 1}, {"from": 20, "to": 21, "weight": 5}]);
+        nodes = new vis.DataSet([{"id": 1, "image": "/static/img/router.png", "label": "R1", "shape": "image", "size": 20, "title": "R1.adminredes.escom.ipn.mx"}, {"id": 2, "image": "/static/img/router.png", "label": "R2", "shape": "image", "size": 20, "title": "R2.adminredes.escom.ipn.mx"}, {"id": 3, "image": "/static/img/router.png", "label": "R3", "shape": "image", "size": 20, "title": "R3.adminredes.escom.ipn.mx"}, {"id": 4, "image": "/static/img/router.png", "label": "R4", "shape": "image", "size": 20, "title": "R4.adminredes.escom.ipn.mx"}, {"id": 5, "image": "/static/img/router.png", "label": "R5", "shape": "image", "size": 20, "title": "R5.adminredes.escom.ipn.mx"}, {"id": 6, "image": "/static/img/router.png", "label": "R6", "shape": "image", "size": 20, "title": "R6.adminredes.escom.ipn.mx"}, {"id": 7, "image": "/static/img/computer.png", "label": "Host 1", "shape": "image", "size": 20, "title": "10.0.1.254/24"}, {"id": 8, "image": "/static/img/computer.png", "label": "Host 2", "shape": "image", "size": 20, "title": "10.0.9.254/24"}, {"id": 9, "image": "/static/img/computer.png", "label": "Host 3", "shape": "image", "size": 20, "title": "10.0.11.254/24"}]);
+        edges = new vis.DataSet([{"from": 1, "to": 4, "weight": 5}, {"from": 1, "to": 5, "weight": 5}, {"from": 1, "to": 6, "weight": 5}, {"from": 2, "to": 4, "weight": 5}, {"from": 3, "to": 4, "weight": 5}, {"from": 4, "to": 7, "weight": 5}, {"from": 5, "to": 6, "weight": 5}, {"from": 5, "to": 8, "weight": 5}, {"from": 6, "to": 9, "weight": 5}]);
 
         // adding nodes and edges to the graph
         data = {nodes: nodes, edges: edges};

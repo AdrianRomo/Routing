@@ -72,6 +72,7 @@ class dataToRouter:
         
         print(f'Dentro del OUTPUT de {self.hostname}: {routers_Code[self.hostname]}')
 
+        routers[self.hostname]['Ip']= self.ip_direct
         threadsInner= []
         for key, values in routers[self.hostname]['Neighbors'].items():
             
@@ -190,7 +191,21 @@ class dataToRouter:
                 print('Interfaz: ', i)
                 if 'Fast' in i:
                     position= interfacesList.index(i) + 1
-                    myInterfacesDict[i]= interfacesList[position]
+
+                    actualValue= interfacesList[position]
+                    sub= ""
+                    for int_fa in internetList:
+                        if actualValue in int_fa:
+                            actualValue= int_fa
+                            sub= actualValue.split("/")
+                            pr=sub[1]
+                            sub=list(map(int,sub[0].split(".")))
+                            sub=arr_to_ip(get_id_net(sub,create_masc_by_prefix(int(pr))))
+                            break
+
+                    myInterfacesDict[i]= actualValue
+                    myInterfacesDict[f"{i}-sub"]= sub
+                    ripRoutes.append(sub)
 
             routers[self.hostname]['Interfaces']= myInterfacesDict
 
@@ -491,6 +506,7 @@ def scan_by_interface(interface_name="enp0s9",user="admin",password="admin",secr
     routers[host_cmd]['Interfaces']= myInterfacesDict
     routers[host_cmd]['RoutesToHosts']= tempHost
     routers[host_cmd]['Protocol']= 'RIP'
+    routers[host_cmd]['Ip']= cisco['ip']
     json_routers=json.dumps(routers,sort_keys=True,indent=4)
     newDict= json.loads(json_routers)
     print(f"Diccionario de routers:\n{json_routers}")
@@ -531,8 +547,8 @@ def scan_by_interface(interface_name="enp0s9",user="admin",password="admin",secr
 
     new_json_routers=json.dumps(routers,sort_keys=True,indent=4)
     print(f"Diccionario de routers:\n{new_json_routers}")
-    #with open('datos.json','w') as outfile:
-    #    json.dump(new_json_routers,outfile)
+    with open('routers.json','w') as outfile:
+        json.dump(new_json_routers,outfile,indent=4)
     
     #VOY AQUÍ, LO QUE SIGUE ES VER COMO HACER PARA CONECTAR AL HOST DE LA POSIBLE RUTA DE CADA ROUTER
     """

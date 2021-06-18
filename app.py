@@ -11,7 +11,7 @@ from flask_admin.contrib import sqla
 from flask_admin import helpers as admin_helpers
 from flask_admin import BaseView,expose
 from wtforms import PasswordField
-from connectR import crearU, modificarU, conectar, eliminarU, hacerPing, pyvistest
+from connectR import crearU, modificarU, conectar, eliminarU, hacerPing, pyvistest, get_routers_ip
 from flask_admin.helpers import (get_form_data, validate_form_on_submit,
                                  get_redirect_target, flash_errors)
 from flask_mail import Message, Mail
@@ -22,7 +22,7 @@ app.config.from_pyfile('config.py')
 mail = Mail()
 mail = Mail(app)
 
-db = SQLAlchemy(app)
+db = SQLAlchemy()
 
 # Define models
 roles_users = db.Table(
@@ -39,6 +39,9 @@ class Role(db.Model, RoleMixin):
     routing_protocol = db.Column(db.String(255))
     interface_number = db.Column(db.Integer())
     neighbors =  db.Column(db.String(255))
+    active_time = db.column(db.String(45))
+    location = db.column(db.String(45))
+    contact = db.column(db.String(45))
     
     def __str__(self):
         return self.name
@@ -107,19 +110,17 @@ class UserView(MyModelView):
     #form_overrides = {
     #    'password': PasswordField
     #}
+
     def on_model_change(self, form, model, is_created):
         if is_created:
+            print('Entra aqui')
             try:
+                print('Creará')
                 crearU(model.username,model.password,model.privileges)
-                print("ENVIANDO")
-                msg = Message("User Created",
-                  sender="adriannavawd@gmail.com",
-                  recipients=["adrianava97@hotmail.com"])
-                msg.body = "Usuario:" + str(model.username) + "\nPrivilegios:" + str(model.privileges) + "\nMail:" + str(model.email) + "\nIP:" + str(model.IP)
-                msg.html = "<b><p> Usuario:" + str(model.username) +"</b></p>"+ "<b><p> Privilegios:" + str(model.privileges) +"</b></p>"+ "<b><p>Mail:" + str(model.email) +"</b></p>"+ "<b><p>IP:" + str(model.IP) +"</b></p>"
-                mail.send(msg)
+                self.sendmail(model, "Usuario Creado")
+    
             except Exception as e:
-                print(e)
+                print('Error, OH NO', e)
                 pass
         else:
             try:
@@ -128,30 +129,36 @@ class UserView(MyModelView):
             except Exception as e:
                 #self.sendmail(model, "Usuario Creado")
                 #crearU(model.username,model.password,model.privileges)
-                print("Error" + e)
+                print("Error", e)
                 pass
 
     def on_model_delete(self, model):
         try:
-            self.sendmail(model, "Usuario Eliminado")
+            #self.sendmail(model, "Usuario Eliminado")
             eliminarU(model.username,model.password,model.privileges)
         except Exception as e:
             print(e)
             pass
 
-    def sendmail(self, model, atattchment):
+    def sendmail(self, model, title, attachment=""):
         print("ENVIANDO")
-        msg = Message(atattchment,
+        msg = Message(title,
             sender="adriannavawd@gmail.com",
-            recipients=["adrianava97@hotmail.com"])
+            recipients=["adriannavawd@gmail.com"])
         msg.body = "Usuario:" + str(model.username) + "\nPrivilegios:" + str(model.privileges) + "\nMail:" + str(model.email) + "\nIP:" + str(model.IP)
         msg.html = "<b><p> Usuario:" + str(model.username) +"</b></p>"+ "<b><p> Privilegios:" + str(model.privileges) +"</b></p>"+ "<b><p>Mail:" + str(model.email) +"</b></p>"+ "<b><p>IP:" + str(model.IP) +"</b></p>"
+        if attachment:
+            with app.open_resource(attachment) as fp:  
+                msg.attach(attachment, "application/json", fp.read())  
         mail.send(msg)   
 
 class CustomView(BaseView):
     @expose('/')
     def index(self):
-        pyvistest()
+        dictionary= pyvistest()
+
+        
+
         return self.render('admin/custom_index.html')
 # Flask views
 @app.route('/')
@@ -169,7 +176,7 @@ admin = flask_admin.Admin(
 # Add model views
 admin.add_view(MyModelView(Role, db.session, menu_icon_type='fa', menu_icon_value='fa-server', name="Routers"))
 admin.add_view(UserView(User, db.session, menu_icon_type='fa', menu_icon_value='fa-users', name="Users"))
-admin.add_view(CustomView(name="Custom view", endpoint='custom', menu_icon_type='fa', menu_icon_value='fa-connectdevelop',))
+admin.add_view(CustomView(name="Topología", endpoint='custom', menu_icon_type='fa', menu_icon_value='fa-connectdevelop',))
 
 # define a context processor for merging flask-admin's template context into the
 # flask-security views.
@@ -190,6 +197,8 @@ def build_sample_db():
     import string
     import random
 
+    db.init_app(app)
+
     db.drop_all()
     db.create_all()
 
@@ -207,6 +216,7 @@ def build_sample_db():
             'Jacob', 'Thomas', 'Emily', 'Lily', 'Ava', 'Isla', 'Alfie', 'Olivia', 'Jessica',
             'Riley', 'William', 'James', 'Geoffrey', 'Lisa', 'Benjamin', 'Stacey', 'Lucy'
         ]
+        
         routers_ip= ['192.168.0.1','10.10.0.130','10.10.0.134']
         privs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
         IPtempadmin=random.choice(routers_ip)
@@ -242,6 +252,8 @@ if __name__ == '__main__':
     database_path = os.path.join(app_dir, app.config['DATABASE_FILE'])
     if not os.path.exists(database_path):
         build_sample_db()
+    else:
+        db.init_app(app)
 
     # Start app
     app.run(debug=True)
