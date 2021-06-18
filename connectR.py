@@ -127,7 +127,6 @@ def pyvistest():
         dictionary= scan_by_interface("enp0s9","admin","admin","1234")
         newDict= json.loads(dictionary)
 
-        print("Hola")
         gadgets= []
 
         g= net("800px", "800px")
